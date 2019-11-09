@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import Optimization.SA.TSP.tspSA;
-
 /**
  * 主函数运行类
  */
@@ -16,7 +14,7 @@ public class MainRun {
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("E:\\桌面\\result.txt"));
-		File file = new File("D:\\Eclipece-java\\Optimization\\src\\Optimization\\SA\\data");
+		File file = new File("src/Optimization/SA/data");
 		for(File f:file.listFiles()) {
 			TSPData.LoadData(f.toString());
 			GeneticAlgorithm GA=new GeneticAlgorithm();
