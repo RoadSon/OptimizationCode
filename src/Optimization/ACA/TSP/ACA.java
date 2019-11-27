@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 class City{
@@ -37,10 +39,10 @@ public class ACA {
 			return disSum;
 		}
 	}
-	private Ant[] ants;
-	private int antNum;
-	private int cityNum = 100;
-	private int maxIter = cityNum * cityNum;
+	private int antNum = 20;
+	private Ant[] ants = new Ant[antNum];
+	private int cityNum;
+	private int maxIter = 1000;
 	private ArrayList<Integer> allCity;
 	private double[][] dis;
 	private double[][] info;
@@ -51,10 +53,21 @@ public class ACA {
 	private int beta;
 	private double rho;
 	private City[] citys;
-	private double bestPathDis;
+	public double bestPathDis;
 	private ArrayList<Integer> bestPath;
-	private void readTSP() throws IOException {
-		BufferedReader bReader = new BufferedReader(new FileReader("src/Optimization/ACA/TSP/TSPdata.txt"));
+	public void readTSP(String path) throws IOException {
+		String tspTestFileName = path.substring(path.lastIndexOf("\\"),path.lastIndexOf("."));
+		String reg = "[^0-9]";
+		Pattern pattern = Pattern.compile(reg);
+		Matcher matcher = pattern.matcher(path);
+		cityNum = Integer.parseInt(matcher.replaceAll("").trim());
+		dis = new double[cityNum][cityNum];
+		info = new double[cityNum][cityNum];
+		inspire = new double[cityNum][cityNum];
+		pro = new double[cityNum][cityNum];
+		citys = new City[cityNum];
+		
+		BufferedReader bReader = new BufferedReader(new FileReader(path));
 		String line = null;
 		int cityCount = 0;
 		while((line = bReader.readLine()) != null) {
@@ -65,23 +78,8 @@ public class ACA {
 			citys[cityCount].y = Double.parseDouble(cityStr[2]);
 			cityCount++;
 		}
-		int disSum = 0;
-		for(int i=0;i<cityNum;i++) {
-			for(int j=0;j<cityNum;j++) {
-				dis[i][j] = Math.sqrt(Math.pow((citys[i].x-citys[j].x), 2)+Math.pow((citys[i].y-citys[j].y), 2));
-				disSum += dis[i][j];
-			}
-		}
-		infoInit = (double)cityNum/disSum;
 	}
 	public ACA() {
-		antNum = (int)10*cityNum;
-		ants = new Ant[antNum];
-		dis = new double[cityNum][cityNum];
-		info = new double[cityNum][cityNum];
-		inspire = new double[cityNum][cityNum];
-		pro = new double[cityNum][cityNum];
-		citys = new City[cityNum];
 		allCity = new ArrayList<>();
 		sigmma = 1;
 		beta = 5;
@@ -90,7 +88,14 @@ public class ACA {
 		bestPath = new ArrayList<>();
 	}
 	public void init() throws IOException {
-		readTSP();
+		int disSum = 0;
+		for(int i=0;i<cityNum;i++) {
+			for(int j=0;j<cityNum;j++) {
+				dis[i][j] = Math.sqrt(Math.pow((citys[i].x-citys[j].x), 2)+Math.pow((citys[i].y-citys[j].y), 2));
+				disSum += dis[i][j];
+			}
+		}
+		infoInit = (double)cityNum/disSum;
 		for(int i=0;i<cityNum;i++) {
 			allCity.add(i);
 			for(int j=0;j<cityNum;j++) {
@@ -185,7 +190,7 @@ public class ACA {
 			initAnt();
 			tourAllCity();
 			updateInfo();
-			System.out.println("迭代次数："+iterNum+"  "+"路径距离："+bestPathDis);
+//			System.out.println("迭代次数："+iterNum+"  "+"路径距离："+bestPathDis);
 			if(curBestDis > bestPathDis) {
 				curBestDis = bestPathDis;
 				repeatIter = 0;
@@ -196,16 +201,23 @@ public class ACA {
 				break;
 			}
 		}
-		System.out.println("总迭代次数："+iterNum);
-		System.out.println("最佳路径距离："+bestPathDis);
-		System.out.print("最佳路径：");
-		for(Integer p:bestPath) {
-			System.out.print(p+"->");
-		}
-		System.out.println(bestPath.get(0));
+//		System.out.println("总迭代次数："+iterNum);
+//		System.out.println("最佳路径距离："+bestPathDis);
+//		System.out.print("最佳路径：");
+//		for(int i=0;i<bestPath.size()-1;i++) {
+//			System.out.print(bestPath.get(i)+"->");
+//		}
+//		System.out.println(bestPath.get(0));
 	}
 	public static void main(String[] args) throws IOException {
-		ACA aca = new ACA();
-		aca.aca();
+//		ACA aca = new ACA();
+//		aca.aca();
+//		String path = "src\\optimization\\el123.txt";
+//		String tspTestFileName = path.substring(path.lastIndexOf("\\")+1,path.lastIndexOf("."));
+//		String reg = "[^0-9]";
+//		Pattern pattern = Pattern.compile(reg);
+//		Matcher matcher = pattern.matcher(path);
+//		int cityNum = Integer.parseInt(matcher.replaceAll("").trim());
+//		System.out.println(cityNum);
 	}
 }

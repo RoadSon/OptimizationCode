@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Util {
 	private static double mean = 0;
@@ -22,6 +23,7 @@ public class Util {
 		mean = sum/data.size();
 		return mean;
 	}
+	
 	public static double getSD(ArrayList<Double> data) {
 		double sd_mean = (mean == 0 ? getMean(data) : mean);
 		double sum = 0;
@@ -48,6 +50,34 @@ public class Util {
 			e.printStackTrace();
 		}
 	}
+	public static void writeTSPResult(Map<String, Double[]> cityDis,String path) throws IOException {
+		double[] bestDis = new double[cityDis.size()];
+		double[] meanDis = new double[cityDis.size()];
+		int count = 0;
+		for(Double[] dis:cityDis.values()) {
+			double sumDis = 0;
+			double minDis = Double.MAX_VALUE;
+			int runtime = dis.length;
+			for(Double d:dis) {
+				if(d<minDis) {
+					minDis = d;
+				}
+				sumDis += d;
+			}
+			bestDis[count] = minDis;
+			meanDis[count] = sumDis/runtime;
+			count ++;
+		}
+		count = 0;
+		BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path));
+		bufferedWriter.write("Problem,Best Result,Average Result"+"\r\n");
+		DecimalFormat df = new DecimalFormat("0.0");
+		for(String city:cityDis.keySet()) {
+			bufferedWriter.write(city+","+df.format(bestDis[count])+","+df.format(meanDis[count])+"\r\n");
+			count ++;
+		}
+		bufferedWriter.close();
+	}
 	public static void writeData(HashMap<Integer,Double[]> errorSpeedMap,String path) {
 		try {
 			DecimalFormat df = new DecimalFormat("0.00E00");
@@ -63,6 +93,42 @@ public class Util {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public static int[] Arraysort(double[] arr, boolean desc) {
+		double temp;
+		int index;
+		int k = arr.length;
+		int[] Index = new int[k];
+		for (int i = 0; i < k; i++) {
+			Index[i] = i;
+		}
+ 
+		for (int i = 0; i < arr.length; i++) {
+			for (int j = 0; j < arr.length - i - 1; j++) {
+				if (desc) {
+					if (arr[j] < arr[j + 1]) {
+						temp = arr[j];
+						arr[j] = arr[j + 1];
+						arr[j + 1] = temp;
+ 
+						index = Index[j];
+						Index[j] = Index[j + 1];
+						Index[j + 1] = index;
+					}
+				} else {
+					if (arr[j] > arr[j + 1]) {
+						temp = arr[j];
+						arr[j] = arr[j + 1];
+						arr[j + 1] = temp;
+ 
+						index = Index[j];
+						Index[j] = Index[j + 1];
+						Index[j + 1] = index;
+					}
+				}
+			}
+		}
+		return Index;
 	}
     public static <T extends Serializable> T clone(T obj){
         T cloneObj = null;

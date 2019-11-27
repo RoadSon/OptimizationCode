@@ -5,7 +5,7 @@ import java.util.Arrays;
 import Optimization.cec13.testfunc;
 
 class Ant implements Serializable{
-	public int dimension = 10;  //x的维度
+	public static int dimension = 10;  //x的维度
 	public double[] x = new double[dimension];  //蚂蚁位置
 	public double max_x = 100;
 	public double min_x = -100;
@@ -29,9 +29,11 @@ class Ant implements Serializable{
 		}
 	}
 	public double computeFitness() throws Exception {
+		//fitness = 0;
 		for(int i=0;i<dimension;i++) {
 			int genesInt = Integer.parseInt(genes[i],2);
 			x[i] = (max_x - min_x) * genesInt / (Math.pow(2, geneNum)-1) + min_x;
+			//fitness += Math.pow(x[i], 2);
 		}
 		double[] f = new double[1];
 		tf.test_func(x,f,dimension,1,functionNum);
@@ -47,12 +49,14 @@ public class ACAdemo {
 	private int antNum = 20;	//蚁群数量
 	private int geneNum = 15;
 	private Ant[] ants = new Ant[antNum];
-	private int maxIter = 30000;
-	private int dimension = 10;
+	private int maxIter = 200000;
+	private int dimension = Ant.dimension;
 	private double[][][] info = new double[dimension][geneNum][2];	//信息素
 	private double rho = 0.1;	//信息素衰减速率
 	private int functionNum = 0;
 	private double[] minX = new double[dimension];	
+	private double minInfo;
+	private double maxInfo;
 	private double minFit = Double.MAX_VALUE;	//函数最小值
 	public ACAdemo(int functionNum) throws Exception {
 		this.functionNum = functionNum;
@@ -73,7 +77,7 @@ public class ACAdemo {
 		for(int i=0;i<dimension;i++) {
 			for(int ant=0;ant<antNum;ant++) {
 				for(int j=1;j<geneNum;j++) {
-					double p = Math.random()*(info[i][j][0] + info[i][j][1]);
+					double p = Math.random();
 					if(p > 0.5) {
 						ants[ant].genes[i] += "0";
 					}else {
@@ -91,8 +95,17 @@ public class ACAdemo {
 		for(int i=0;i<antNum;i++) {
 			if(ants[i].computeFitness() < minFit) {
 				minFit = ants[i].fitness;
+				minX = ants[i].x.clone();
 			}
 		}
+		double maxFit = Double.MIN_VALUE;
+		for(int i=0;i<antNum;i++) {
+			if(ants[i].fitness > maxFit) {
+				maxFit = ants[i].fitness;
+			}
+		}
+		minInfo = 1/maxFit;
+		maxInfo = 5/minFit;
 	}
 	/**
 	 * 初始化信息素
@@ -115,20 +128,24 @@ public class ACAdemo {
 	public void tourAllDimension() {
 		for(int i=0;i<dimension;i++) {
 			for(int ant=0;ant<antNum;ant++) {
-				int c0 = 0;
-				int c1 = 0;
 				for(int j=1;j<geneNum;j++) {
 					double p = Math.random()*(info[i][j][0] + info[i][j][1]);
 					if(info[i][j][0] > p) {
 						ants[ant].genes[i] += "0";
-						c0++;
 					}else {
 						ants[ant].genes[i] += "1";
-						c1++;
 					}
 				}
-				System.out.println(c0+"\t"+c1);
 			}
+		}
+	}
+	public double correctInfo(double info) {
+		if(info < minInfo) {
+			return minInfo;
+		}else if(info > maxInfo) {
+			return maxInfo;
+		}else {
+			return info;
 		}
 	}
 	/**
@@ -157,10 +174,11 @@ public class ACAdemo {
 		for(int i=0;i<dimension;i++) {
 			String minAntGene = ants[minAntIndex].genes[i];
 			for(int j=0;j<geneNum;j++) {
-				if(minAntGene.charAt(j) == '0') {
-					info[i][j][0] += 1/tempMinFit;
-				}else if(minAntGene.charAt(j)=='1') {
-					info[i][j][1] += 1/tempMinFit;
+				for(int k=0;k<2;k++) {
+					if(minAntGene.charAt(j) == (char)(k+48)) {
+						info[i][j][k] += 1/tempMinFit;
+						info[i][j][k] = correctInfo(info[i][j][k]);
+					}
 				}
 			}
 		}
@@ -172,7 +190,7 @@ public class ACAdemo {
 	public void aca() throws Exception {
 		int iter = 1;
 		initAllInfo();
-		while(iter <= maxIter) {
+		while(iter <= 10000) {
 			initAnt();
 			tourAllDimension();
 			updateInfo();
